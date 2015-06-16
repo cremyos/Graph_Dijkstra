@@ -121,14 +121,14 @@ void displayPath(st_edge** path, int startVertex,int* shortestPath)
 	{
 		if(shortestPath[i]==-1)
 		{
-			printf("No way to %c node !\n",i+'A');
+			printf("No way to %c node!\n",i+'A');
 			continue;
 		}
 		printf("Path from %c to %c:",startVertex+'A',i+'A');
 		p = *(path+i);
 		while(p != NULL)
 		{
-			printf("%d(%d) ",p->vertex,p->value);
+			printf("%c(%d) ",p->vertex+'A',p->value);
 			p = p->next;
 		}
 		printf("\n");
