@@ -1,16 +1,29 @@
+/*
+ ************************************************
+ *Name : Matrix_Dijkstra.c                      *
+ *Date : 2015-06-08                             *
+ *Author : sniper                               *
+ *Aim : Matrix storage the graph and using the  *
+ *      Dijkstra algrithm to find the way v0 to *
+ *      every node.                             *
+ ************************************************
+ */
 #include <stdio.h>  
+#include <stdlib.h>
 #include <malloc.h>  
 #include <string.h>
 
 int node_count=0,weight=0,edge_count=0;
-//存放最短路径的边元素
+
+/*
+ *storage the shotest edge
+ */
 typedef struct edge{
         int vertex;
 		int value;
         struct edge* next;
 }st_edge;
 
-void createGraph(int (*edge)[node_count], int start, int end, int value);  
 void displayGraph(int (*edge)[node_count]); 
 void displayPath(st_edge** path, int startVertex,int* shortestPath);
 void dijkstra(int (*edge)[node_count], st_edge*** path, int** shortestPath, int startVertex, int* vertexStatusArr);
@@ -22,15 +35,20 @@ int main()
 	int i; 
 	int node_pair1,node_pair2;
 	int* vertexStatusArr;
+	int* shortestPath = NULL;	
+	int startVertex = 0;
 
 	printf("please input the number of node and edge: ");
 	scanf("%d %d",&node_count,&edge_count);
 
-	//动态创建存放边的二维数组 
 	int (*edge)[node_count] = (int (*)[node_count])malloc(sizeof(int)*node_count*node_count);  
  
 	memset(edge,0,sizeof(edge));
-	//存放顶点的遍历状态，0：未遍历，1：已遍历
+	
+	/*
+	 *storage the visit status of node
+	 *0 not vist 1 visit
+	 */
 	vertexStatusArr = (int*)malloc(sizeof(int)*node_count);  
 	for(i=0;i<node_count;i++){  
 		vertexStatusArr[i] = 0;  
@@ -39,32 +57,35 @@ int main()
 	printf("after init:\n");  
 	displayGraph(edge); 
 
-	//创建图 
+	/*
+	 *Create the graph
+	 */
 	for(i=0;i<edge_count;i++)
 	{
 		printf("please input the node pair: ");  
+		/*
+		 *node_pair1 node_pair2 two side of edge and 
+		 *the weight means the weight of edge
+		 */
 		scanf("%d %d %d",&node_pair1,&node_pair2,&weight); 
-		createGraph(edge,node_pair1,node_pair2,weight);
+		edge[node_pair1][node_pair2] = weight;
 	}
-
 	printf("after create:\n");  
 	displayGraph(edge);
 
-	st_edge** path = NULL;
-	//存储最短路径的权值
+	st_edge** path = NULL;	
+	
 	/*
-	shortestPath[0] = 0;
-	shortestPath[1] = 8;
-	shortestPath[2] = 12;
-	从顶点0到0的路径是0
-	从顶点0到1的路径是8
-	从顶点0到2的路径是12
-	*/
-	int* shortestPath = NULL;
-	//从顶点0开始寻找最短路径
-	int startVertex = 0;
-	//最短路径
+	 *from the v0 to find the way
+	 */
+	startVertex = 0;
+
+	/*
+	 *Dijkstra algrithm
+	 */
 	dijkstra(edge, &path, &shortestPath, startVertex, vertexStatusArr);
+	printf("***********************************************\n");
+
 	printf("the path is:\n");
 	displayPath(path,startVertex,shortestPath);
 
@@ -72,61 +93,77 @@ int main()
 	free(path);  
 	return 0;  
 }  
-//创建图 
-void createGraph(int (*edge)[node_count], int start, int end, int value){  
-        edge[start][end] = value;  
-}  
-//打印存储的图
-void displayGraph(int (*edge)[node_count]){  
-        int i,j;  
-        for(i=0;i<node_count;i++)
+
+/*
+ *print the graph
+ */
+void displayGraph(int (*edge)[node_count])
+{  
+	int i,j;  
+	for(i=0;i<node_count;i++)
+	{  
+		for(j=0;j<node_count;j++)
 		{  
-                for(j=0;j<node_count;j++)
-				{  
-                        printf("%d ",edge[i][j]);  
-                }  
-                printf("\n");  
-        }  
+			printf("%d ",edge[i][j]);  
+		}  
+		printf("\n");  
+	}  
 }
-//打印最短路径
-void displayPath(st_edge** path, int startVertex,int* shortestPath){
-        int i;
-        st_edge* p;
-        for(i=1;i<node_count;i++)
+
+/*
+ *print the shortest path
+ */
+void displayPath(st_edge** path, int startVertex,int* shortestPath)
+{
+	int i;
+	st_edge* p;
+	for(i=1;i<node_count;i++)
+	{
+		if(shortestPath[i]==-1)
 		{
-			if(shortestPath[i]==-1)
-			{
-				printf("No way to %c node !\n",i+'A');
-				continue;
-			}
-			printf("Path from %c to %c:",startVertex+'A',i+'A');
-			p = *(path+i);
-			while(p != NULL)
-			{
-				printf("%d(%d) ",p->vertex,p->value);
-				p = p->next;
-			}
-			printf("\n");
-			printf("the count is:%d\n",shortestPath[i]);
-        }
+			printf("No way to %c node !\n",i+'A');
+			continue;
+		}
+		printf("Path from %c to %c:",startVertex+'A',i+'A');
+		p = *(path+i);
+		while(p != NULL)
+		{
+			printf("%d(%d) ",p->vertex,p->value);
+			p = p->next;
+		}
+		printf("\n");
+		printf("the count is:%d\n",shortestPath[i]);
+	}
 }
-//最短路径
-void dijkstra(int (*edge)[node_count], st_edge*** path, int** shortestPath, int startVertex, int* vertexStatusArr){
-	//初始化最短路径
-	*path = (st_edge**)malloc(sizeof(st_edge*)*node_count);
-        int i,j;
-    for(i=0;i<node_count;i++){
-		if(i == startVertex){
+
+/*
+ *Dijkstra find the shortest path
+ */
+void dijkstra(int (*edge)[node_count], st_edge*** path, int** shortestPath, int startVertex, int* vertexStatusArr)
+{
+	int i=0,j=0;
+	int shortest=0, distance=0,start=0, end=0, edgeValue=0, vNum = 1;
+
+	/*
+	 *init the shortest path
+	 */
+	*path = (st_edge**)malloc(sizeof(st_edge*)*node_count);        
+    for(i=0;i<node_count;i++)
+	{
+		if(i == startVertex)
+		{
 			st_edge* e = (st_edge*)malloc(sizeof(st_edge));
 			e->vertex = startVertex;
 			e->value = 0;
 			e->next = NULL;
 			(*path)[i] = e;
-		}else{
-            (*path)[i] = NULL;
 		}
+		else
+            (*path)[i] = NULL;
     }
-	//初始化最短路径的权值
+	/*
+	 *Init the shortest path weight
+	 */
 	*shortestPath = (int *)malloc(sizeof(int)*node_count);
 	for(i=0;i<node_count;i++){
 		if(i == startVertex){
@@ -135,25 +172,34 @@ void dijkstra(int (*edge)[node_count], st_edge*** path, int** shortestPath, int 
 			(*shortestPath)[i] = -1;
 		}
 	}
-	//从顶点0开始，则顶点0就是已访问的 
+	/*
+	 *from the v0 to visit
+	 */
 	vertexStatusArr[startVertex] = 1;  
  
-    int shortest, distance,start, end, edgeValue, vNum = 1;	
-	//如果还顶点还没有访问完
+	/*
+	 *find the way v0 to other node
+	 */
 	while(vNum < node_count)
 	{
 		shortest = 9999;
 		for(i=0;i<node_count;i++)
 		{  
-			//选择已经访问过的点
+			/*
+			 *choice the node has been visited
+			 */
 			if(vertexStatusArr[i] == 1)
 			{  
 				for(j=0;j<node_count;j++)
 				{  
-					//选择一个没有访问过的点  
+					/*
+					 *choice the node has not been visited
+					 */ 
 					if(vertexStatusArr[j] == 0)
 					{  
-						//选出一条value最小的边
+						/*
+						 *choice the node that distance is minist
+						 */
 						if(edge[i][j] != 0 && (distance = getDistance(edge[i][j], startVertex, i,  *shortestPath)) < shortest)
 						{  
 							shortest = distance;  
@@ -168,19 +214,24 @@ void dijkstra(int (*edge)[node_count], st_edge*** path, int** shortestPath, int 
 		vNum++; 
 		if(shortest == 9999)
 			continue;	 
-		//将点设置为访问过 
-		vertexStatusArr[end] = 1;   
-		//保存最短路径权值
+		/*
+		 *make the node set visited
+		 */
+		vertexStatusArr[end] = 1;  
+		/*
+		 *visit the shortest path weight
+		 */ 
 		(*shortestPath)[end] = shortest;
-		//保存最短路径
+		/*
+		 *create the shortest path
+		 */
 		createPath(*path, startVertex, start, end, edgeValue); 
-		
-		//if(end==node_count-1)
-			//break;
 	}  
 }
 
-//返回从startVertex到新的顶点的距离
+/*
+ *get the distance from the v0 to new node
+ */
 int getDistance(int value, int startVertex, int start, int* shortestPath){
 	if(start == startVertex){
 		return value;
@@ -189,7 +240,9 @@ int getDistance(int value, int startVertex, int start, int* shortestPath){
 	}
 }
 
-//保存最短路径
+/*	
+ *Save the shortest path
+ */
 void createPath(st_edge **path, int startVertex, int start, int end, int edgeValue){
 	if(start == startVertex){
 		st_edge* newEdge = (st_edge*)malloc(sizeof(st_edge));
